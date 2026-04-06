@@ -2,57 +2,186 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>flip</title>
+<title>poker</title>
 
 <style>
 body{
   margin:0;
-  background:#111;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  background:#0b0b0b;
+  color:#fff;
   font-family:sans-serif;
+  text-align:center;
+}
+
+.top{
+  padding:15px;
+}
+
+select, button{
+  font-size:16px;
+  padding:6px 10px;
+  margin:5px;
+  border-radius:8px;
+  border:none;
+}
+
+.area{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:15px;
+  padding:10px;
+}
+
+.player{
+  display:flex;
+  gap:6px;
 }
 
 .card{
-  width:220px;
-  height:320px;
+  width:60px;
+  height:90px;
   background:#fff;
-  border-radius:14px;
+  color:#000;
+  border-radius:8px;
   display:flex;
-  justify-content:center;
   align-items:center;
-  font-size:42px;
+  justify-content:center;
+  font-size:16px;
   user-select:none;
-  transition:transform .2s;
 }
 
-.card:active{
-  transform:scale(.96);
+.board{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin:15px 0;
+}
+
+.hidden{
+  background:#444;
+  color:transparent;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card" id="x">?</div>
+<div class="top">
+人数：
+<select id="num">
+<option>2</option><option>3</option><option>4</option>
+<option>5</option><option>6</option><option>7</option>
+<option>8</option><option>9</option>
+</select>
+<button onclick="start()">スタート</button>
+</div>
+
+<div class="area" id="players"></div>
+
+<div class="board">
+  <div class="card hidden" id="b1">?</div>
+  <div class="card hidden" id="b2">?</div>
+  <div class="card hidden" id="b3">?</div>
+  <div class="card hidden" id="b4">?</div>
+  <div class="card hidden" id="b5">?</div>
+</div>
 
 <script>
-let c = document.getElementById("x")
+let players = document.getElementById("players")
+let board = [
+  document.getElementById("b1"),
+  document.getElementById("b2"),
+  document.getElementById("b3"),
+  document.getElementById("b4"),
+  document.getElementById("b5")
+]
 
-c.addEventListener("click", ()=>{
-  if(c.innerText === "?"){
-    c.innerText = draw()
-  }else{
-    c.innerText = "?"
+let deck = []
+let stage = 0
+
+function make(){
+  let s=["♠","♥","♦","♣"]
+  let n=["A","K","Q","J","10","9","8","7","6","5","4","3","2"]
+  deck=[]
+  for(let i=0;i<s.length;i++){
+    for(let j=0;j<n.length;j++){
+      deck.push(n[j]+s[i])
+    }
+  }
+}
+
+function draw(){
+  let r=Math.floor(Math.random()*deck.length)
+  return deck.splice(r,1)[0]
+}
+
+function start(){
+  players.innerHTML=""
+  make()
+  stage=0
+
+  // プレイヤー配り
+  let num=document.getElementById("num").value
+  for(let i=0;i<num;i++){
+    let p=document.createElement("div")
+    p.className="player"
+
+    let c1=document.createElement("div")
+    let c2=document.createElement("div")
+    c1.className="card"
+    c2.className="card"
+
+    c1.innerText=draw()
+    c2.innerText=draw()
+
+    p.appendChild(c1)
+    p.appendChild(c2)
+    players.appendChild(p)
+  }
+
+  // ボード初期化
+  for(let i=0;i<5;i++){
+    board[i].innerText=draw()
+    board[i].classList.add("hidden")
+  }
+}
+
+// タップで進行（フロップ→ターン）
+document.body.addEventListener("click", (e)=>{
+  if(stage===0){
+    // フロップ
+    for(let i=0;i<3;i++){
+      board[i].classList.remove("hidden")
+    }
+    stage=1
+  }else if(stage===1){
+    // ターン
+    board[3].classList.remove("hidden")
+    stage=2
   }
 })
 
-function draw(){
-  let a = ["A","K","Q","J","10"]
-  return a[Math.floor(Math.random()*a.length)]
-}
+// リバーだけスライドでめくる
+let startX=0
+let moving=false
+
+board[4].addEventListener("touchstart",(e)=>{
+  startX=e.touches[0].clientX
+  moving=true
+})
+
+board[4].addEventListener("touchend",(e)=>{
+  if(!moving) return
+  let endX=e.changedTouches[0].clientX
+  let diff=endX-startX
+
+  if(Math.abs(diff)>30 && stage===2){
+    board[4].classList.remove("hidden")
+    stage=3
+  }
+  moving=false
+})
 </script>
 
 </body>
