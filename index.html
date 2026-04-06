@@ -2,90 +2,41 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>poker</title>
+<title>flip</title>
 
 <style>
 body{
   margin:0;
-  background:#0b0b0b;
-  color:#fff;
-  font-family:sans-serif;
-  text-align:center;
-}
-
-.top{
-  padding:15px;
-}
-
-select, button{
-  font-size:16px;
-  padding:6px 10px;
-  margin:5px;
-  border-radius:8px;
-  border:none;
-}
-
-.area{
+  background:#111;
+  height:100vh;
   display:flex;
-  flex-wrap:wrap;
   justify-content:center;
-  gap:15px;
-  padding:10px;
-}
-
-.player{
-  display:flex;
-  gap:6px;
+  align-items:center;
+  font-family:sans-serif;
 }
 
 .card{
-  width:60px;
-  height:90px;
+  width:220px;
+  height:320px;
   background:#fff;
-  color:#000;
-  border-radius:8px;
+  border-radius:14px;
   display:flex;
+  justify-content:center;
   align-items:center;
-  justify-content:center;
-  font-size:16px;
+  font-size:42px;
   user-select:none;
+  transition:transform .2s;
 }
 
-.board{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  margin:15px 0;
-}
-
-.hidden{
-  background:#444;
-  color:transparent;
+.card:active{
+  transform:scale(.96);
 }
 </style>
 </head>
 
 <body>
 
-<div class="top">
-人数：
-<select id="num">
-<option>2</option><option>3</option><option>4</option>
-<option>5</option><option>6</option><option>7</option>
-<option>8</option><option>9</option>
-</select>
-<button onclick="start()">スタート</button>
-</div>
-
-<div class="area" id="players"></div>
-
-<div class="board">
-  <div class="card hidden" id="b1">?</div>
-  <div class="card hidden" id="b2">?</div>
-  <div class="card hidden" id="b3">?</div>
-  <div class="card hidden" id="b4">?</div>
-  <div class="card hidden" id="b5">?</div>
-</div>
+<div class="card" id="x">?</div>
 
 <script>
 let players = document.getElementById("players")
@@ -121,7 +72,6 @@ function start(){
   make()
   stage=0
 
-  // プレイヤー配り
   let num=document.getElementById("num").value
   for(let i=0;i<num;i++){
     let p=document.createElement("div")
@@ -140,47 +90,50 @@ function start(){
     players.appendChild(p)
   }
 
-  // ボード初期化
   for(let i=0;i<5;i++){
     board[i].innerText=draw()
+    board[i].style.clipPath="inset(0 100% 0 0)"
     board[i].classList.add("hidden")
   }
 }
 
-// タップで進行（フロップ→ターン）
-document.body.addEventListener("click", (e)=>{
+document.body.addEventListener("click", ()=>{
   if(stage===0){
-    // フロップ
     for(let i=0;i<3;i++){
       board[i].classList.remove("hidden")
+      board[i].style.clipPath="none"
     }
     stage=1
   }else if(stage===1){
-    // ターン
     board[3].classList.remove("hidden")
+    board[3].style.clipPath="none"
     stage=2
   }
 })
 
-// リバーだけスライドでめくる
+// リバー絞り
 let startX=0
-let moving=false
 
 board[4].addEventListener("touchstart",(e)=>{
   startX=e.touches[0].clientX
-  moving=true
 })
 
-board[4].addEventListener("touchend",(e)=>{
-  if(!moving) return
-  let endX=e.changedTouches[0].clientX
-  let diff=endX-startX
+board[4].addEventListener("touchmove",(e)=>{
+  if(stage!==2) return
 
-  if(Math.abs(diff)>30 && stage===2){
-    board[4].classList.remove("hidden")
+  let moveX=e.touches[0].clientX
+  let diff=moveX-startX
+
+  let percent = Math.min(Math.max(diff,0),100)
+  board[4].classList.remove("hidden")
+  board[4].style.clipPath=`inset(0 ${100-percent}% 0 0)`
+})
+
+board[4].addEventListener("touchend",()=>{
+  if(stage===2){
+    board[4].style.clipPath="none"
     stage=3
   }
-  moving=false
 })
 </script>
 
