@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>flip</title>
+
+<style>
+body{
+  margin:0;
+  background:#111;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:sans-serif;
+}
+
+.card{
+  width:220px;
+  height:320px;
+  background:#fff;
+  border-radius:14px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:42px;
+  user-select:none;
+  transition:transform .2s;
+}
+
+.card:active{
+  transform:scale(.96);
+}
+</style>
+</head>
+
+<body>
+
+<div class="card" id="x">?</div>
+
+<script>
+let c = document.getElementById("x")
+
+c.addEventListener("click", ()=>{
+  if(c.innerText === "?"){
+    c.innerText = draw()
+  }else{
+    c.innerText = "?"
+  }
+})
+
+function draw(){
+  let a = ["A","K","Q","J","10"]
+  return a[Math.floor(Math.random()*a.length)]
+}
+</script>
+
+</body>
+</html>
